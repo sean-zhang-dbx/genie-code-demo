@@ -72,6 +72,8 @@ Before diving into demos, establish why Genie Code is different from other AI co
 - It also understands the Databricks platform: SDP, MLflow, UC model registry, dashboards
 
 > **Screenshot**: _UC Explorer showing bronze_adverse_events table with columns and metadata_
+> <img width="947" height="778" alt="image" src="https://github.com/user-attachments/assets/3aa6b7e8-8fe5-47bb-ba28-1b8e65dba92a" />
+
 
 ### 1.2 Show the Genie Code Interface
 
@@ -180,6 +182,9 @@ research scientists.
 - This is the "Plan in Prompt + No Instructions" pattern, best for one-off tasks or new domains where you have not yet written instructions
 
 > **Screenshot**: _Genie Code's generated plan / PRD for the dashboard_
+> <img width="782" height="587" alt="image" src="https://github.com/user-attachments/assets/57cb6ca5-c5f8-47ba-96c0-6d4a5f61f379" />
+<img width="887" height="776" alt="image" src="https://github.com/user-attachments/assets/d2965a9e-b8a2-4555-8343-38a2497a92ed" />
+
 
 ---
 
@@ -235,10 +240,10 @@ from EDA, train initial model, then develop hyperparameter tuning?
 - Production notebook (`3_data_science_production.py`) adds: parameterized config, bundled PyFunc preprocessing, reusable functions, model validation gate, inference validation, scalability guard
 
 > **Screenshot**: _Confusion matrix showing near-100% accuracy (the red flag)_
-
-> **Screenshot**: _Feature importance chart showing risk_score dominating (the leakage signal)_
+> <img width="542" height="460" alt="image" src="https://github.com/user-attachments/assets/5a280490-edf0-47b3-ad2b-3eb90aae8922" />
 
 > **Screenshot**: _Conversation where the human interrupts about data leakage_
+<img width="783" height="557" alt="image" src="https://github.com/user-attachments/assets/a9475325-59d2-4499-8fda-4f889189c7d2" />
 
 ---
 
@@ -300,6 +305,8 @@ I want to create a Genie space on the gold data in genie_code_assets.
 **Key message**: Skills are how you extend Genie Code beyond its built-in agents. If your team has a repeatable workflow (code reviews, data quality audits, migration patterns, etc.), you can encode it as a skill.
 
 > **Screenshot**: _The created Genie Space in the Databricks UI_
+> <img width="899" height="735" alt="image" src="https://github.com/user-attachments/assets/42cee333-65f4-487d-86d9-13e57f6186aa" />
+
 
 ---
 
