@@ -1,113 +1,99 @@
-# Genie Code Demo: End-to-End Data Lifecycle on Databricks
+# Pharma Clinical Trial MLOps Pipeline
 
-An end-to-end demonstration of the Databricks data lifecycle — from raw data exploration, through a data engineering pipeline, to ML model training, and finally serving insights via an AI/BI Genie space. All driven entirely by code.
+End-to-end Databricks MLOps pipeline for pharmaceutical clinical trial data — from synthetic data generation through medallion-architecture ETL to production-grade ML model development, registration, and inference validation.
 
-## Dataset
-
-**`samples.nyctaxi.trips`** — ~22K NYC yellow taxi trip records from January–February 2016.
-
-| Column | Type | Description |
-|---|---|---|
-| `tpep_pickup_datetime` | timestamp | Trip pickup time |
-| `tpep_dropoff_datetime` | timestamp | Trip dropoff time |
-| `trip_distance` | double | Trip distance in miles (0.0–30.6) |
-| `fare_amount` | double | Fare in USD (-8.0–275.0) |
-| `pickup_zip` | int | Pickup ZIP code (~120 unique) |
-| `dropoff_zip` | int | Dropoff ZIP code (~193 unique) |
-
----
-
-## Demo Outline
-
-### Phase 1: Data Exploration
-
-Profile the raw `samples.nyctaxi.trips` data to understand its shape, quality, and characteristics.
-
-- [ ] **Schema & volume** — Inspect column types, row count, and table metadata
-- [ ] **Summary statistics** — Compute min/max/avg/stddev for numeric columns (`trip_distance`, `fare_amount`)
-- [ ] **Temporal coverage** — Determine date range and trip volume by day/hour
-- [ ] **Categorical distributions** — Analyze top pickup/dropoff ZIP codes and trip patterns
-- [ ] **Data quality assessment** — Identify nulls, anomalies (negative fares, zero-distance trips), and outliers
-- [ ] **Visualizations** — Fare distribution histogram, trip distance vs. fare scatter plot, hourly trip volume
-
-### Phase 2: Data Engineering Pipeline
-
-Clean and transform the raw data into an analysis-ready Delta table with engineered features.
-
-- [ ] **Create target schema** — `CREATE SCHEMA IF NOT EXISTS` for the demo catalog/schema
-- [ ] **Data cleaning** — Remove invalid records:
-  - Negative or zero fares
-  - Zero-distance trips
-  - Unreasonably long trips (>100 miles) or high fares (>$500)
-  - Null values in critical columns
-- [ ] **Feature engineering** — Derive new columns:
-  - `trip_duration_minutes` — computed from pickup/dropoff timestamps
-  - `pickup_hour` — hour of day (0–23)
-  - `pickup_day_of_week` — day name (Monday–Sunday)
-  - `is_weekend` — boolean weekend flag
-  - `speed_mph` — average speed (distance / duration)
-  - `fare_per_mile` — fare efficiency metric
-- [ ] **Outlier filtering** — Remove trips with impossible speeds (>100 mph) or durations (<1 min or >3 hrs)
-- [ ] **Write to Delta** — Save the cleaned, feature-enriched table as a managed Delta table
-- [ ] **Validation** — Compare row counts before/after, verify no nulls in engineered columns
-
-### Phase 3: ML Model — Fare Prediction
-
-Train a regression model to predict `fare_amount` from trip features, logged with MLflow.
-
-- [ ] **Feature selection** — Select predictive features:
-  - `trip_distance`, `trip_duration_minutes`, `pickup_hour`, `pickup_day_of_week`, `is_weekend`, `speed_mph`
-- [ ] **Train/test split** — 80/20 split with reproducible seed
-- [ ] **Model training** — Train a LightGBM regressor (or scikit-learn GradientBoosting)
-- [ ] **MLflow experiment tracking** — Log:
-  - Model parameters
-  - Metrics: RMSE, MAE, R²
-  - Feature importance plot
-  - Model artifact with signature and input example
-- [ ] **Evaluation** — Visualize predictions vs. actuals, residuals distribution
-- [ ] **Register model** — Register the best model to Unity Catalog for serving
-
-### Phase 4: AI/BI Genie Space
-
-Create a Genie space on the cleaned data so business users can ask natural-language questions about taxi trips.
-
-- [ ] **Discover resources** — Find an eligible SQL warehouse (pro or serverless)
-- [ ] **Define the space** — Configure:
-  - Title, description, and sample questions
-  - SQL expressions for key metrics (avg fare, total trips, avg speed)
-  - Text instructions for business context
-  - Column configs with prompt matching enabled
-- [ ] **Validate configuration** — Run the config validator before creating
-- [ ] **Create via API** — Use the Databricks SDK to create the Genie space programmatically
-- [ ] **Verify** — Open the space and test with sample questions
-
----
-
-## Project Structure
+## Architecture Overview
 
 ```
-genie-code-demo/
-├── README.md                      # This file — demo plan and documentation
-├── 01_data_exploration.py         # Phase 1: Raw data profiling and visualization
-├── 02_data_engineering.py         # Phase 2: Cleaning, feature engineering, Delta write
-├── 03_ml_model.py                 # Phase 3: Model training, MLflow logging, registration
-└── 04_genie_space.py              # Phase 4: Genie space creation via API
+┌─────────────────────┐     ┌──────────────────────────┐     ┌────────────────────────────┐
+│  0_pharma_data_     │     │ 1_pharma_clinical_data_  │     │ 3_model_development        │
+│    generation       │────▶│   pipeline               │────▶│ (Production MLOps)         │
+│                     │     │                          │     │                            │
+│  Synthetic JSON     │     │  Medallion Architecture   │     │  EDA → Train → Tune →      │
+│  data → UC Volume   │     │  Bronze → Silver → Gold   │     │  Register → Validate       │
+└─────────────────────┘     └──────────────────────────┘     └────────────────────────────┘
 ```
 
-## Prerequisites
+## Notebooks
 
-- Databricks workspace with Unity Catalog enabled
-- Access to the `samples` catalog (built-in)
-- A catalog/schema with write permissions for the cleaned table and ML model
-- A pro or serverless SQL warehouse (for Genie space)
-- Python packages: `lightgbm`, `scikit-learn`, `mlflow` (pre-installed on Databricks)
+| Notebook | Description | Key Technologies |
+| --- | --- | --- |
+| **`0_pharma_data_generation`** | Generates synthetic clinical trial data (patients, trials, results, adverse events) with baked-in predictive signal. Writes JSON files to a Unity Catalog Volume. | Python, Unity Catalog Volumes |
+| **`1_pharma_clinical_data_pipeline`** | Spark Declarative Pipelines (SDP) implementing a medallion architecture. Bronze ingests via Auto Loader, Silver cleanses with data quality expectations, Gold produces BI-ready aggregates. | SDP (`@dp`), Auto Loader, Materialized Views, Liquid Clustering, CDF |
+| **`2_serious_adverse_event_prediction_lightgbm`** | Exploratory ML notebook — EDA, baseline LightGBM, Hyperopt tuning, ablation study for data leakage detection (`risk_score`), model registration to Unity Catalog. | LightGBM, Hyperopt, MLflow, category_encoders |
+| **`3_model_development`** | **Production-ready** version of notebook 2 with full MLOps best practices (see below). | LightGBM, Hyperopt, MLflow PyFunc, Unity Catalog Model Registry |
+
+## Production MLOps Features (Notebook 3)
+
+Notebook `3_model_development` addresses all production-readiness gaps identified in the exploratory notebook:
+
+| Feature | Detail |
+| --- | --- |
+| **Parameterized configuration** | All settings (`table_name`, `catalog`, `model_name`, `max_evals`) exposed via `dbutils.widgets` for runtime flexibility and job parameterization |
+| **Leakage-free feature set** | `risk_score`, `outcome`, and `severity` excluded from the start — no ablation section needed |
+| **Bundled preprocessing** | `OrdinalEncoder` + LightGBM wrapped in a custom `mlflow.pyfunc.PythonModel` (`AdverseEventClassifier`) so the full preprocessing→prediction pipeline is a single portable artifact |
+| **Reusable helper functions** | `train_and_evaluate()` and `make_hyperopt_objective()` eliminate code duplication across baseline, tuning, and final evaluation |
+| **Model validation gate** | New model is compared against the current Champion on the test set; only promoted if it meets or exceeds incumbent performance. Otherwise registered as Challenger |
+| **Dataset provenance** | `mlflow.log_input()` tracks the exact training data used for each run |
+| **MLflow run tags** | All runs tagged with `model_type`, `stage`, and `dataset` for easy filtering |
+| **Inference validation** | End-to-end test: loads Champion model from Unity Catalog and runs sample predictions with raw (unencoded) input to verify the bundled pipeline works |
+| **Scalability guard** | Row count check before `.toPandas()` with configurable `MAX_ROWS` limit to prevent OOM on large datasets |
+
+## Data Model
+
+### Source Data (Generated by Notebook 0)
+
+| File | Records | Description |
+| --- | --- | --- |
+| `patients.json` | 2,000 | Demographics, BMI, pre-existing conditions, baseline labs |
+| `clinical_trials.json` | 15 | Trial metadata, drug info, phases, sponsors |
+| `trial_results.json` | 8,000 | Per-visit treatment outcomes, vitals, lab values |
+| `adverse_events.json` | 5,000 | Adverse events with severity, risk scores, and `serious` flag (target) |
+
+### Medallion Architecture (Notebook 1)
+
+| Layer | Tables | Pattern |
+| --- | --- | --- |
+| **Bronze** | `bronze_adverse_events`, `bronze_clinical_trials`, `bronze_patients`, `bronze_trial_results` | Streaming tables via Auto Loader |
+| **Silver** | `silver_adverse_events`, `silver_clinical_trials`, `silver_patients`, `silver_trial_results` | Materialized views with type casting, data quality expectations, CDF |
+| **Gold** | `gold_trial_safety_summary`, `gold_patient_outcomes`, `gold_drug_efficacy` | Materialized views for BI aggregates |
+
+### ML Target
+
+- **Task**: Binary classification
+- **Target**: `serious` flag in `silver_adverse_events`
+- **Primary metric**: ROC-AUC (threshold-independent, robust to class imbalance, suitable for clinical safety)
+- **Features used**: `drug_name`, `ae_type`, `trial_id`, `reported_by`, `concomitant_drug`, `dosage_mg`, `days_on_treatment`, `drug_interaction_flag`
+- **Excluded (leakage)**: `risk_score` (suspected derivation from target), `outcome`, `severity` (post-event determinations)
+
+## Unity Catalog Assets
+
+| Asset Type | Name | Description |
+| --- | --- | --- |
+| **Catalog** | `sean_zhang_catalog` | Top-level catalog |
+| **Schema** | `genie_code_assets` | Schema for all pipeline assets |
+| **Volume** | `raw_pharma_data` | Source JSON files |
+| **Model** | `serious_adverse_event_classifier` | Registered LightGBM PyFunc model with Champion/Challenger aliases |
 
 ## Getting Started
 
-1. Clone this repo into your Databricks workspace
-2. Run the notebooks in order: `01` → `02` → `03` → `04`
-3. Each notebook is self-contained — just attach to a cluster and run all cells
+### Prerequisites
 
----
+- Databricks workspace with Unity Catalog enabled
+- Serverless compute or a cluster with `category_encoders`, `lightgbm`, `hyperopt`
+- Permissions to create schemas, volumes, and models in the target catalog
 
-*Built with Databricks Assistant — demonstrating the full power of code-driven data intelligence.*
+### Execution Order
+
+1. **Run `0_pharma_data_generation`** — Creates the catalog, schema, volume, and generates synthetic JSON data
+2. **Run `1_pharma_clinical_data_pipeline`** — Deploy as a Spark Declarative Pipeline to create bronze → silver → gold tables
+3. **Run `3_model_development`** — Trains, tunes, registers, and validates the ML model with full MLOps workflow
+
+> **Note**: Notebook `2_serious_adverse_event_prediction_lightgbm` is the exploratory predecessor to notebook 3 and is included for reference. Use notebook 3 for production workflows.
+
+## Key Design Decisions
+
+1. **Why LightGBM?** — Fast training, native categorical feature support, strong performance on tabular data with mixed feature types
+2. **Why ROC-AUC?** — Clinical safety context where missing a serious event (FN) is costlier than a false alarm (FP); ROC-AUC measures discrimination independent of threshold choice
+3. **Why PyFunc wrapping?** — The `OrdinalEncoder` must travel with the model for inference. A custom `mlflow.pyfunc.PythonModel` bundles encoder + model into a single artifact that accepts raw DataFrames
+4. **Why validation gate?** — Prevents model regression in production by comparing new models against the incumbent Champion before alias promotion
