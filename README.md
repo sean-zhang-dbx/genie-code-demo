@@ -12,9 +12,9 @@ Demo repository for the **Genie Code Foundations** training session. Showcases e
 genie-code-demo/
 ├── README.md                              # This file
 ├── RUNBOOK.md                             # Step-by-step presenter guide
-├── .assistant_instructions.md             # Genie Code instructions (deployed to workspace)
 ├── setup/
-│   └── 0_pharma_data_generation.py        # Generates synthetic clinical trial data
+│   ├── 0_pharma_data_generation.py        # Generates synthetic clinical trial data
+│   └── assistant_instructions.md          # Genie Code instructions (deployed to workspace)
 └── ai-generated-demos/
     ├── 1_data_engineering.py              # Data Engineering Agent: SDP pipeline
     ├── 2_data_science_exploratory.py      # Data Science Agent: EDA + leakage detection
@@ -74,7 +74,7 @@ Built by the Data Engineering Agent using Spark Declarative Pipelines (SDP):
 
 | Layer | What It Does | Example in This Demo |
 |-------|-------------|---------------------|
-| **Instructions** | Always-on rules for every conversation | [`.assistant_instructions.md`](.assistant_instructions.md): SDP conventions, MLflow tracking, UC namespace |
+| **Instructions** | Always-on rules for every conversation | [`setup/assistant_instructions.md`](setup/assistant_instructions.md): SDP conventions, MLflow tracking, UC namespace |
 | **Skills** | On-demand expertise loaded when relevant | `prompt-to-genie` skill for Genie Space creation |
 | **MCP** | External tool access via UC-governed connections | GitHub MCP for repository operations |
 

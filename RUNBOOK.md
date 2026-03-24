@@ -33,7 +33,7 @@ Run [`setup/0_pharma_data_generation.py`](setup/0_pharma_data_generation.py) in 
 
 ### 2. Deploy `.assistant_instructions.md`
 
-Copy [.assistant_instructions.md](.assistant_instructions.md) to `/Users/<your-email>/.assistant_instructions.md` in the workspace.
+Copy [`setup/assistant_instructions.md`](setup/assistant_instructions.md) to `/Users/<your-email>/.assistant_instructions.md` in the workspace.
 
 ### 3. (Optional) Set up GitHub MCP (for Part 4.2)
 
@@ -94,7 +94,7 @@ With Unity Catalog providing the data context, the next question is: how do you 
 
 **Open**: The `.assistant_instructions.md` file in the workspace editor.
 
-**Source**: [.assistant_instructions.md](.assistant_instructions.md)
+**Source**: [setup/assistant_instructions.md](setup/assistant_instructions.md)
 
 **Talking points**:
 - Instructions are the foundation of working effectively with Genie Code
@@ -350,9 +350,9 @@ Wrap up with takeaways, call to action, and roadmap.
 genie-code-demo/
 ├── README.md                              # Project overview
 ├── RUNBOOK.md                             # This file (presenter guide)
-├── .assistant_instructions.md             # Genie Code instructions (deployed to workspace)
 ├── setup/
-│   └── 0_pharma_data_generation.py        # Pre-requisite: generates synthetic clinical trial data
+│   ├── 0_pharma_data_generation.py        # Pre-requisite: generates synthetic clinical trial data
+│   └── assistant_instructions.md          # Genie Code instructions (deployed to workspace)
 └── ai-generated-demos/
     ├── 1_data_engineering.py              # Data Engineering Agent demo (SDP pipeline)
     ├── 2_data_science_exploratory.py      # Data Science Agent demo (EDA + leakage detection)
