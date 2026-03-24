@@ -12,17 +12,20 @@
 # MAGIC | Silver | Cleansed versions of each bronze table | Materialized views with type casting, expectations, CDF |
 # MAGIC | Gold | `trial_safety_summary`, `patient_outcomes`, `drug_efficacy` | Materialized views for BI aggregates |
 # MAGIC 
-# MAGIC **Source:** `/Volumes/sean_zhang_catalog/genie_code_assets/raw_pharma_data/`
+# MAGIC **Source:** Configured via `pipeline.source_path` pipeline configuration.
 
 # COMMAND ----------
 
 from pyspark import pipelines as dp
 from pyspark.sql.functions import col, to_date, current_timestamp, count, avg, sum as _sum, when, lit, round as _round
 
-# Parameterize via pipeline configuration
+CATALOG = spark.conf.get("pipeline.catalog")
+SCHEMA = spark.conf.get("pipeline.schema", "genie_code_assets")
+VOLUME = spark.conf.get("pipeline.volume", "raw_pharma_data")
+
 SOURCE_PATH = spark.conf.get(
     "pipeline.source_path",
-    "/Volumes/sean_zhang_catalog/genie_code_assets/raw_pharma_data"
+    f"/Volumes/{CATALOG}/{SCHEMA}/{VOLUME}"
 )
 
 # COMMAND ----------

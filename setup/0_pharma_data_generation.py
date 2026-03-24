@@ -5,8 +5,6 @@
 # MAGIC ## Pharma Data Generation
 # MAGIC Generates fictional clinical trial data in **JSON format** and writes to a Unity Catalog **Volume**.
 # MAGIC 
-# MAGIC **Schema:** `sean_zhang_catalog.genie_code_assets`
-# MAGIC 
 # MAGIC **Files produced:**
 # MAGIC - `patients.json` — demographics, BMI, pre-existing conditions, baseline labs
 # MAGIC - `clinical_trials.json` — trial metadata, drug info, phases
@@ -17,9 +15,13 @@
 
 # COMMAND ----------
 
-catalog = "sean_zhang_catalog"
-schema = "genie_code_assets"
-volume = "raw_pharma_data"
+dbutils.widgets.text("catalog", "", "UC Catalog")
+dbutils.widgets.text("schema", "genie_code_assets", "UC Schema")
+dbutils.widgets.text("volume", "raw_pharma_data", "Volume Name")
+
+catalog = dbutils.widgets.get("catalog")
+schema = dbutils.widgets.get("schema")
+volume = dbutils.widgets.get("volume")
 
 spark.sql(f"DROP SCHEMA IF EXISTS {catalog}.{schema} CASCADE")
 spark.sql(f"CREATE SCHEMA {catalog}.{schema}")
@@ -127,7 +129,7 @@ for i in range(num_trials):
         "end_date": random_date(2023, 2025),
         "status": random.choice(trial_statuses),
         "target_enrollment": random.randint(100, 500),
-        "sponsor": random.choice(["GSK India", "Biocon", "Sun Pharma", "Dr. Reddy's", "Cipla"]),
+        "sponsor": random.choice(["PharmaCorp", "Biocon", "Sun Pharma", "MedGenix", "Cipla"]),
         "sites": random.randint(3, 20)
     })
 

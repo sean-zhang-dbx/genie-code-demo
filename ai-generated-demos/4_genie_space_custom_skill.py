@@ -7,6 +7,12 @@
 
 # COMMAND ----------
 
+dbutils.widgets.text("catalog", "", "UC Catalog")
+dbutils.widgets.text("schema", "genie_code_assets", "UC Schema")
+dbutils.widgets.text("warehouse_id", "", "SQL Warehouse ID")
+
+# COMMAND ----------
+
 # DBTITLE 1,Build Genie space configuration
 import secrets
 import json
@@ -14,8 +20,8 @@ import json
 def gen_id():
     return secrets.token_hex(16)
 
-catalog = "sean_zhang_catalog"
-schema = "genie_code_assets"
+catalog = dbutils.widgets.get("catalog")
+schema = dbutils.widgets.get("schema")
 
 serialized_space = {
     "version": 2,
@@ -262,7 +268,8 @@ print(f"  - {len(serialized_space['benchmarks']['questions'])} benchmarks (6 cor
 # DBTITLE 1,Validate configuration
 import re
 
-script_path = "/Workspace/Users/sean.zhang@databricks.com/.assistant/skills/prompt-to-genie/scripts/validate_config.py"
+current_user = spark.sql("SELECT current_user()").first()[0]
+script_path = f"/Workspace/Users/{current_user}/.assistant/skills/prompt-to-genie/scripts/validate_config.py"
 with open(script_path, "r") as f:
     script_content = f.read()
 
@@ -318,8 +325,11 @@ import json
 
 w = WorkspaceClient()
 
-warehouse_id = "16ad82bead3f55b5"
-parent_path = "/Users/sean.zhang@databricks.com"
+warehouse_id = dbutils.widgets.get("warehouse_id")
+if not warehouse_id:
+    raise ValueError("warehouse_id widget is required. Set it to your SQL warehouse ID.")
+current_user = spark.sql("SELECT current_user()").first()[0]
+parent_path = f"/Users/{current_user}"
 title = "Drug Efficacy Analytics"
 description = "Compare drug efficacy across clinical trials — ORR, response breakdowns, and safety profiles for principal investigators and scientists."
 

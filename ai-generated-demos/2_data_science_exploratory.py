@@ -4,8 +4,6 @@
 
 # MAGIC # Serious Adverse Event Prediction (Binary Classification)
 # MAGIC 
-# MAGIC **Table**: `sean_zhang_catalog.genie_code_assets.silver_adverse_events`
-# MAGIC 
 # MAGIC **Objective**: Predict whether an adverse event is **serious** (`serious` flag) based on drug, treatment, and event characteristics.
 # MAGIC 
 # MAGIC **Primary Optimization Metric**: **ROC-AUC** — chosen because:
@@ -16,6 +14,12 @@
 # MAGIC **Secondary Metrics**: Accuracy, F1-score, PR-AUC, Confusion Matrix
 # MAGIC 
 # MAGIC **Workflow**: EDA → Preprocessing → Baseline LightGBM → Hyperparameter Tuning (Hyperopt + SparkTrials) → Final Evaluation
+
+# COMMAND ----------
+
+dbutils.widgets.text("catalog", "", "UC Catalog")
+dbutils.widgets.text("schema", "genie_code_assets", "UC Schema")
+dbutils.widgets.text("model_name", "serious_adverse_event_classifier", "Model Name")
 
 # COMMAND ----------
 
@@ -62,7 +66,12 @@ print("All imports loaded successfully.")
 # COMMAND ----------
 
 # Load data from Unity Catalog
-TABLE_NAME = "sean_zhang_catalog.genie_code_assets.silver_adverse_events"
+CATALOG = dbutils.widgets.get("catalog")
+SCHEMA = dbutils.widgets.get("schema")
+MODEL_NAME = dbutils.widgets.get("model_name")
+current_user = spark.sql("SELECT current_user()").first()[0]
+
+TABLE_NAME = f"{CATALOG}.{SCHEMA}.silver_adverse_events"
 spark_df = spark.table(TABLE_NAME)
 df = spark_df.toPandas()
 
@@ -283,7 +292,7 @@ print(f"Class proportions (test):  {y_test.value_counts(normalize=True).to_dict(
 # COMMAND ----------
 
 # --- Configure MLflow experiment ---
-experiment_name = "/Users/sean.zhang@databricks.com/adverse_events_serious_prediction"
+experiment_name = f"/Users/{current_user}/adverse_events_serious_prediction"
 mlflow.set_experiment(experiment_name)
 
 # --- Specify categorical features for LightGBM ---
@@ -775,7 +784,7 @@ from mlflow import MlflowClient
 
 mlflow.set_registry_uri("databricks-uc")
 
-uc_model_name = "sean_zhang_catalog.genie_code_assets.serious_adverse_event_classifier"
+uc_model_name = f"{CATALOG}.{SCHEMA}.{MODEL_NAME}"
 
 # Register model from the best no-risk-score run
 model_uri = f"runs:/{final_nr_run_id}/model"
@@ -823,4 +832,4 @@ print(f"  mlflow.lightgbm.load_model('models:/{uc_model_name}@Champion')")
 # MAGIC ### Modeling Notes
 # MAGIC - The feature space is highly discriminative — the baseline model already achieves near-perfect ROC-AUC
 # MAGIC - If `risk_score` is derived from the target variable, it should be investigated and potentially removed for a more realistic evaluation
-# MAGIC - All experiments are tracked in MLflow under `/Users/sean.zhang@databricks.com/adverse_events_serious_prediction`
+# MAGIC - All experiments are tracked in MLflow under the configured experiment path

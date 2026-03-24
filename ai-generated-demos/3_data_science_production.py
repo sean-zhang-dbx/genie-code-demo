@@ -29,15 +29,13 @@
 # ==============================================================================
 
 # Runtime widgets for parameterization
-dbutils.widgets.text("table_name", "sean_zhang_catalog.genie_code_assets.silver_adverse_events", "Source Table")
-dbutils.widgets.text("catalog", "sean_zhang_catalog", "UC Catalog")
+dbutils.widgets.text("catalog", "", "UC Catalog")
 dbutils.widgets.text("schema", "genie_code_assets", "UC Schema")
 dbutils.widgets.text("model_name", "serious_adverse_event_classifier", "Model Name")
 dbutils.widgets.text("max_evals", "32", "Hyperopt Max Evals")
 dbutils.widgets.text("max_rows", "500000", "Max Rows for toPandas")
 
 # Resolve parameters
-TABLE_NAME = dbutils.widgets.get("table_name")
 CATALOG = dbutils.widgets.get("catalog")
 SCHEMA = dbutils.widgets.get("schema")
 MODEL_NAME = dbutils.widgets.get("model_name")
@@ -45,8 +43,10 @@ MAX_EVALS = int(dbutils.widgets.get("max_evals"))
 MAX_ROWS = int(dbutils.widgets.get("max_rows"))
 
 # Derived
+current_user = spark.sql("SELECT current_user()").first()[0]
+TABLE_NAME = f"{CATALOG}.{SCHEMA}.silver_adverse_events"
 UC_MODEL_NAME = f"{CATALOG}.{SCHEMA}.{MODEL_NAME}"
-EXPERIMENT_NAME = f"/Users/sean.zhang@databricks.com/{MODEL_NAME}_experiment"
+EXPERIMENT_NAME = f"/Users/{current_user}/{MODEL_NAME}_experiment"
 
 # Feature engineering config
 DROP_COLS = ["event_id", "patient_id", "onset_date", "outcome", "severity", "risk_score", "_ingestion_timestamp"]
@@ -101,15 +101,16 @@ from hyperopt.pyll import scope
 sns.set_theme(style="whitegrid")
 
 # Re-resolve widgets after restartPython
-TABLE_NAME = dbutils.widgets.get("table_name")
 CATALOG = dbutils.widgets.get("catalog")
 SCHEMA = dbutils.widgets.get("schema")
 MODEL_NAME = dbutils.widgets.get("model_name")
 MAX_EVALS = int(dbutils.widgets.get("max_evals"))
 MAX_ROWS = int(dbutils.widgets.get("max_rows"))
 
+current_user = spark.sql("SELECT current_user()").first()[0]
+TABLE_NAME = f"{CATALOG}.{SCHEMA}.silver_adverse_events"
 UC_MODEL_NAME = f"{CATALOG}.{SCHEMA}.{MODEL_NAME}"
-EXPERIMENT_NAME = f"/Users/sean.zhang@databricks.com/{MODEL_NAME}_experiment"
+EXPERIMENT_NAME = f"/Users/{current_user}/{MODEL_NAME}_experiment"
 DROP_COLS = ["event_id", "patient_id", "onset_date", "outcome", "severity", "risk_score", "_ingestion_timestamp"]
 TARGET_COL = "serious"
 TEST_SIZE = 0.30
